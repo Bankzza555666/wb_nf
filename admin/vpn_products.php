@@ -1,0 +1,663 @@
+<?php
+require_once './controller/admin_controller/admin_config.php';
+checkAdminAuth();
+?>
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการแพ็กเกจ VPN - Admin</title>
+    <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-body: #000000;
+            --card-bg: rgba(10, 10, 10, 0.8);
+            --border-color: rgba(229, 9, 20, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --accent: #E50914;
+        }
+
+        body {
+            background: var(--bg-body);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+
+        .card-header {
+            background: rgba(229, 9, 20, 0.1);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table {
+            color: var(--text-primary);
+        }
+
+        .table td, .table th {
+            color: var(--text-primary) !important;
+        }
+
+        .table>:not(caption)>*>* {
+            background-color: transparent !important;
+            border-color: var(--border-color);
+            color: var(--text-primary) !important;
+        }
+
+        .table thead th {
+            background-color: rgba(15, 23, 42, 0.8) !important;
+            color: var(--text-secondary);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: #ff1a1a;
+            border-color: #ff1a1a;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--border-color);
+            color: #fff;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .form-select option {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .img-selectable {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .img-selectable:hover {
+            transform: scale(1.05);
+            border-color: var(--accent) !important;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+    </style>
+    <!-- ✅ Site Theme (Admin Selectable) -->
+    <?php if (file_exists(__DIR__ . '/../include/theme_head.php')) include __DIR__ . '/../include/theme_head.php'; ?>
+</head>
+
+<body>
+    <?php include 'navbar.php'; ?>
+
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="text-white mb-0"><i class="fas fa-shield-alt text-danger me-2"></i>จัดการแพ็กเกจ VPN</h3>
+                <small class="text-secondary">VPN Products Management (Premium UI)</small>
+            </div>
+            <button class="btn btn-primary" onclick="openModal()">
+                <i class="fas fa-plus me-2"></i>เพิ่มแพ็กเกจ
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>รูป</th>
+                                <th>ชื่อแพ็กเกจ</th>
+                                <th>Server</th>
+                                <th>Protocol</th>
+                                <th>ราคา/วัน</th>
+                                <th>ราคา/GB</th>
+                                <th>สถานะ</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productList">
+                            <tr><td colspan="8" class="text-center py-4 text-secondary">กำลังโหลด...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Form -->
+    <div class="modal fade" id="modalForm" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-box-open me-2"></i>ข้อมูลแพ็กเกจ VPN</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formData">
+                        <input type="hidden" name="action" value="save_vpn_product">
+                        <input type="hidden" id="eid" name="id">
+                        <input type="hidden" name="image_id" id="eimage_id" value="">
+
+                        <div class="section-title">ข้อมูลทั่วไป</div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary">ชื่อแพ็กเกจ</label>
+                                <input type="text" class="form-control" name="filename" id="eproduct_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary">เลือก Server</label>
+                                <select class="form-select" name="server_id" id="eserver_id" required>
+                                    <option value="">-- เลือก Server --</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-secondary">รูปภาพแพ็กเกจ (Optional)</label>
+                                <div class="d-flex align-items-center gap-3 p-3" style="background: rgba(255,255,255,0.02); border-radius: 10px;">
+                                    <div id="image-preview-box" style="width: 80px; height: 80px; background: rgba(0,0,0,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border-color);">
+                                        <i class="fas fa-image text-secondary fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="openImagePicker()">
+                                                <i class="fas fa-images me-2"></i>เลือกรูปภาพ
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearImage()" id="btnClearImage" style="display: none;">
+                                                <i class="fas fa-times"></i> ลบ
+                                            </button>
+                                        </div>
+                                        <small class="text-secondary d-block mt-1">แนะนำขนาด: 600x400px</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-title">การเชื่อมต่อ (V2Ray Config)</div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary">Inbound ID</label>
+                                <input type="number" class="form-control" name="inbound_id" id="einbound_id" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary">Host / Domain</label>
+                                <input type="text" class="form-control" name="host" id="ehost">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary">Port</label>
+                                <input type="number" class="form-control" name="port" id="eport">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-secondary">Protocol</label>
+                                <select class="form-select" name="protocol" id="eprotocol">
+                                    <option value="vless">VLESS</option>
+                                    <option value="vmess">VMess</option>
+                                    <option value="trojan">Trojan</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-secondary">Network</label>
+                                <select class="form-select" name="network" id="enetwork">
+                                    <option value="tcp">TCP</option>
+                                    <option value="ws">WebSocket</option>
+                                    <option value="grpc">gRPC</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-secondary">Security</label>
+                                <select class="form-select" name="security" id="esecurity">
+                                    <option value="tls">TLS</option>
+                                    <option value="none">None</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="section-title">ราคาและข้อจำกัด</div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary">ราคา/วัน (฿)</label>
+                                <input type="number" step="0.01" class="form-control" name="price_per_day" id="eprice_per_day" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary">ราคา/GB (฿)</label>
+                                <input type="number" step="0.01" class="form-control" name="data_per_gb" id="edata_per_gb" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary">วันสูงสุด</label>
+                                <input type="number" class="form-control" name="max_days" id="emax_days" value="365">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary">Devices สูงสุด</label>
+                                <input type="number" class="form-control" name="max_devices" id="emax_devices" value="5">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary">Min Data (GB)</label>
+                                <input type="number" class="form-control" name="min_data_gb" id="emin_data_gb" value="10">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary">Max Data (GB)</label>
+                                <input type="number" class="form-control" name="max_data_gb" id="emax_data_gb" value="1000">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary">Speed (Mbps)</label>
+                                <input type="number" class="form-control" name="speed_limit_mbps" id="espeed_limit" value="0">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary">Sort Order</label>
+                                <input type="number" class="form-control" name="sort_order" id="esort_order" value="0">
+                            </div>
+                        </div>
+
+                        <div class="section-title">ตั้งค่าเพิ่มเติม</div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary">รายละเอียด</label>
+                            <textarea class="form-control" name="description" id="edescription" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary">Features (บรรทัดละ 1 รายการ)</label>
+                            <textarea class="form-control" name="features" id="efeatures" rows="3" placeholder="รองรับ PC/Mobile&#10;ความเร็วสูง&#10;Auto Setup"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary">Config Template</label>
+                            <textarea class="form-control font-monospace small" name="config_template" id="econfig_template" rows="2" placeholder="vless://{UUID}@{HOST}:{PORT}..."></textarea>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="eis_popular" name="is_popular">
+                                    <label class="form-check-label" for="eis_popular">🔥 แพ็กเกจแนะนำ (Popular)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="eis_active" name="is_active" checked>
+                                    <label class="form-check-label" for="eis_active">✅ เปิดใช้งาน (Active)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="saveData()">
+                        <i class="fas fa-save me-2"></i>บันทึก
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Picker Modal -->
+    <div class="modal fade" id="modalImagePicker" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-images me-2"></i>เลือกรูปภาพ</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs mb-3" id="imageTabs">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-library">คลังรูปภาพ</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-upload">อัปโหลดใหม่</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="tab-library">
+                            <div class="row g-3" id="imageLibrary">
+                                <div class="col-12 text-center text-secondary py-5">กำลังโหลด...</div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="tab-upload">
+                            <div class="text-center py-4">
+                                <input type="file" id="imageUploadInput" class="d-none" accept="image/*" onchange="uploadImage(this)">
+                                <button class="btn btn-outline-primary btn-lg" onclick="document.getElementById('imageUploadInput').click()">
+                                    <i class="fas fa-cloud-upload-alt me-2"></i>เลือกไฟล์อัปโหลด
+                                </button>
+                                <p class="text-secondary mt-2 small">รองรับ: JPG, PNG, GIF, WebP (สูงสุด 5MB)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        console.log('VPN Products Admin v2026-01-25 loaded');
+        
+        const modal = new bootstrap.Modal(document.getElementById('modalForm'));
+        const imageModal = new bootstrap.Modal(document.getElementById('modalImagePicker'));
+        let isImagePickerActive = false;
+        let pendingImageSelection = null;
+
+        // Load servers for dropdown
+        function loadServers() {
+            fetch('../controller/admin_controller/admin_api.php?action=get_servers')
+                .then(r => r.json())
+                .then(data => {
+                    const select = document.getElementById('eserver_id');
+                    select.innerHTML = '<option value="">-- เลือก Server --</option>';
+                    if (data.data) {
+                        data.data.forEach(s => {
+                            select.innerHTML += `<option value="${s.server_id}">${s.server_name} (${s.server_location || 'N/A'})</option>`;
+                        });
+                    }
+                });
+        }
+
+        // Load products list
+        function loadProducts() {
+            fetch('../controller/admin_controller/vpn_product_controller.php?action=get_products')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.getElementById('productList');
+                    if (!data.success || !data.data || data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-secondary">ไม่พบข้อมูล</td></tr>';
+                        return;
+                    }
+
+                    let html = '';
+                    data.data.forEach(p => {
+                        const imgHtml = p.image_filename 
+                            ? `<img src="../img/products/${p.image_filename}" class="product-image">`
+                            : `<div class="product-image d-flex align-items-center justify-content-center bg-dark"><i class="fas fa-shield-alt text-secondary"></i></div>`;
+                        
+                        const statusBadge = p.is_active == 1 
+                            ? '<span class="badge bg-success">Active</span>'
+                            : '<span class="badge bg-secondary">Inactive</span>';
+                        
+                        const popularBadge = p.is_popular == 1 
+                            ? '<span class="badge bg-warning text-dark ms-1">🔥</span>' 
+                            : '';
+
+                        html += `
+                            <tr>
+                                <td>${imgHtml}</td>
+                                <td>
+                                    <strong class="text-white">${p.filename}</strong>${popularBadge}
+                                    <div class="small text-secondary">${p.description || '-'}</div>
+                                </td>
+                                <td><span class="badge bg-info">${p.server_name || p.server_id}</span></td>
+                                <td><span class="badge bg-secondary">${p.protocol?.toUpperCase() || 'N/A'}</span></td>
+                                <td class="text-warning">฿${parseFloat(p.price_per_day).toFixed(2)}</td>
+                                <td class="text-success">฿${parseFloat(p.data_per_gb).toFixed(2)}</td>
+                                <td>${statusBadge}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-warning me-1" onclick='editData(${p.id})'>
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteData(${p.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = html;
+                });
+        }
+
+        function openModal() {
+            document.getElementById('formData').reset();
+            document.getElementById('eid').value = '';
+            document.getElementById('eis_active').checked = true;
+            clearImage();
+            modal.show();
+        }
+
+        function editData(id) {
+            fetch(`../controller/admin_controller/vpn_product_controller.php?action=get_product&id=${id}&t=${Date.now()}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        const p = data.data;
+                        document.getElementById('eid').value = p.id;
+                        document.getElementById('eproduct_name').value = p.filename;
+                        document.getElementById('eserver_id').value = p.server_id;
+                        document.getElementById('einbound_id').value = p.inbound_id;
+                        document.getElementById('ehost').value = p.host || '';
+                        document.getElementById('eport').value = p.port || '';
+                        document.getElementById('eprotocol').value = p.protocol || 'vless';
+                        document.getElementById('enetwork').value = p.network || 'tcp';
+                        document.getElementById('esecurity').value = p.security || 'tls';
+                        document.getElementById('eprice_per_day').value = p.price_per_day;
+                        document.getElementById('edata_per_gb').value = p.data_per_gb;
+                        document.getElementById('emax_days').value = p.max_days;
+                        document.getElementById('emax_devices').value = p.max_devices;
+                        document.getElementById('emin_data_gb').value = p.min_data_gb;
+                        document.getElementById('emax_data_gb').value = p.max_data_gb;
+                        document.getElementById('espeed_limit').value = p.speed_limit_mbps || 0;
+                        document.getElementById('esort_order').value = p.sort_order || 0;
+                        document.getElementById('edescription').value = p.description || '';
+                        document.getElementById('econfig_template').value = p.config_template || '';
+                        document.getElementById('eis_popular').checked = p.is_popular == 1;
+                        document.getElementById('eis_active').checked = p.is_active == 1;
+
+                        // Features
+                        let featuresText = '';
+                        try {
+                            if (p.features) {
+                                const features = JSON.parse(p.features);
+                                if (Array.isArray(features)) featuresText = features.join('\n');
+                            }
+                        } catch (e) {}
+                        document.getElementById('efeatures').value = featuresText;
+
+                        // Image
+                        if (p.image_id && p.image_id > 0 && p.image_url) {
+                            document.getElementById('eimage_id').value = p.image_id;
+                            document.getElementById('image-preview-box').innerHTML = `<img src="${p.image_url}" style="width:100%; height:100%; object-fit: cover;">`;
+                            document.getElementById('btnClearImage').style.display = 'block';
+                        } else {
+                            clearImage();
+                        }
+
+                        modal.show();
+                    }
+                });
+        }
+
+        function saveData() {
+            const imageIdValue = document.getElementById('eimage_id').value;
+            const formData = new FormData(document.getElementById('formData'));
+            formData.set('is_popular', document.getElementById('eis_popular').checked ? 1 : 0);
+            formData.set('is_active', document.getElementById('eis_active').checked ? 1 : 0);
+            formData.set('image_id', imageIdValue || '');
+
+            fetch('../controller/admin_controller/vpn_product_controller.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    modal.hide();
+                    Swal.fire({ icon: 'success', title: 'สำเร็จ', timer: 1500, showConfirmButton: false });
+                    loadProducts();
+                } else {
+                    Swal.fire('Error', data.message || 'เกิดข้อผิดพลาด', 'error');
+                }
+            })
+            .catch(err => Swal.fire('Error', 'Connection failed', 'error'));
+        }
+
+        function deleteData(id) {
+            Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: 'ข้อมูลจะถูกลบอย่างถาวร',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'ลบเลย'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    const fd = new FormData();
+                    fd.append('action', 'delete_product');
+                    fd.append('id', id);
+
+                    fetch('../controller/admin_controller/vpn_product_controller.php', {
+                        method: 'POST',
+                        body: fd
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({ icon: 'success', title: 'ลบสำเร็จ', timer: 1000, showConfirmButton: false });
+                            loadProducts();
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        // Image Picker Functions
+        function openImagePicker() {
+            isImagePickerActive = true;
+            pendingImageSelection = null;
+            modal.hide();
+            setTimeout(() => {
+                imageModal.show();
+                loadImages();
+            }, 500);
+        }
+
+        document.getElementById('modalImagePicker').addEventListener('hidden.bs.modal', function () {
+            if (isImagePickerActive) {
+                setTimeout(() => {
+                    modal.show();
+                    setTimeout(() => {
+                        if (pendingImageSelection) {
+                            document.getElementById('eimage_id').value = pendingImageSelection.id;
+                            document.getElementById('image-preview-box').innerHTML = `<img src="../${pendingImageSelection.url}" style="width:100%; height:100%; object-fit: cover;">`;
+                            document.getElementById('btnClearImage').style.display = 'block';
+                            pendingImageSelection = null;
+                        }
+                    }, 100);
+                    isImagePickerActive = false;
+                }, 200);
+            }
+        });
+
+        function loadImages() {
+            fetch('../controller/admin_controller/image_upload_controller.php?action=get_images&t=' + Date.now())
+                .then(r => r.json())
+                .then(data => {
+                    const container = document.getElementById('imageLibrary');
+                    if (data.success && data.data && data.data.length > 0) {
+                        const validImages = data.data.filter(img => img.id && parseInt(img.id) > 0);
+                        if (validImages.length > 0) {
+                            container.innerHTML = validImages.map(img => `
+                                <div class="col-6 col-sm-4 col-md-3">
+                                    <div class="card bg-dark h-100 img-selectable position-relative" onclick="selectImage(${img.id}, '${img.url}')">
+                                        <img src="../${img.url}" class="card-img-top" style="height: 120px; object-fit: cover;">
+                                        <div class="card-body p-2">
+                                            <small class="text-secondary text-truncate d-block">${img.original_name}</small>
+                                            <small class="text-info d-block">ID: ${img.id}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('');
+                        } else {
+                            container.innerHTML = '<div class="col-12 text-center text-warning py-5">พบรูปภาพแต่ ID ไม่ถูกต้อง กรุณาอัปโหลดใหม่</div>';
+                        }
+                    } else {
+                        container.innerHTML = '<div class="col-12 text-center text-secondary py-5">ไม่พบรูปภาพ</div>';
+                    }
+                });
+        }
+
+        function uploadImage(input) {
+            if (input.files && input.files[0]) {
+                const formData = new FormData();
+                formData.append('image', input.files[0]);
+                formData.append('action', 'upload_image');
+
+                Swal.fire({ title: 'กำลังอัปโหลด...', didOpen: () => Swal.showLoading() });
+
+                fetch('../controller/admin_controller/image_upload_controller.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('สำเร็จ', data.message, 'success');
+                        const triggerEl = document.querySelector('#imageTabs button[data-bs-target="#tab-library"]');
+                        if (triggerEl) {
+                            const tab = bootstrap.Tab.getInstance(triggerEl) || new bootstrap.Tab(triggerEl);
+                            tab.show();
+                        }
+                        loadImages();
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                })
+                .catch(err => Swal.fire('Error', 'Upload failed', 'error'));
+            }
+        }
+
+        function selectImage(id, url) {
+            const imageId = parseInt(id);
+            if (!imageId || imageId <= 0) {
+                Swal.fire('Error', 'รูปภาพนี้มี ID ไม่ถูกต้อง', 'error');
+                return;
+            }
+            pendingImageSelection = { id: imageId, url: url };
+            imageModal.hide();
+        }
+
+        function clearImage() {
+            document.getElementById('eimage_id').value = '';
+            document.getElementById('image-preview-box').innerHTML = '<i class="fas fa-image text-secondary fa-2x"></i>';
+            document.getElementById('btnClearImage').style.display = 'none';
+        }
+
+        // Init
+        loadServers();
+        loadProducts();
+    </script>
+</body>
+</html>

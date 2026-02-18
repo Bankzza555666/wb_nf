@@ -1,0 +1,173 @@
+/* css/theme.css */
+
+/* === DEFAULT (LIGHT MODE) === */
+:root {
+    /* Colors */
+    --primary-color: #E50914;
+    --secondary-color: #ff4d4d;
+    --accent-color: #ff0000;
+    --warning-color: #f59e0b;
+    --success-color: #10b981;
+    --error-color: #ef4444;
+
+    /* Backgrounds */
+    --bg-body: #0a0a0a;
+    --bg-card: rgba(20, 20, 20, 0.8);
+    --bg-glass: rgba(255, 255, 255, 0.05);
+    --bg-nav: rgba(0, 0, 0, 0.9);
+    --bg-input: rgba(30, 30, 30, 0.9);
+
+    /* Text */
+    --text-main: #ffffff;
+    --text-muted: #aaaaaa;
+    --text-light: #cccccc;
+    --text-on-primary: #ffffff;
+
+    /* Borders & Shadows */
+    --border-color: rgba(229, 9, 20, 0.2);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 15px rgba(229, 9, 20, 0.3);
+
+    /* Gradients */
+    --bg-gradient: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
+}
+
+/* === DARK MODE === */
+[data-theme="dark"] {
+    /* Colors (Adjusted for Dark Mode) */
+    --primary-color: #E50914;
+    --secondary-color: #ff4d4d;
+    --accent-color: #ff0000;
+
+    /* Backgrounds */
+    --bg-body: #000000;
+    --bg-card: rgba(10, 10, 10, 0.8);
+    --bg-glass: rgba(0, 0, 0, 0.6);
+    --bg-nav: rgba(0, 0, 0, 0.95);
+    --bg-input: rgba(20, 20, 20, 0.5);
+
+    /* Text */
+    --text-main: #ffffff;
+    --text-muted: #aaaaaa;
+    --text-light: #cccccc;
+
+    /* Borders & Shadows */
+    --border-color: rgba(229, 9, 20, 0.2);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(229, 9, 20, 0.4);
+
+    /* Gradients */
+    --bg-gradient: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+}
+
+/* === GLOBAL OVERRIDES === */
+body {
+    background: var(--bg-gradient) !important;
+    color: var(--text-main) !important;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Navbar */
+.main-nav,
+.navbar {
+    background: var(--bg-nav) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.brand-text {
+    /* Keep gradient text but ensure visibility */
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.nav-menu-link {
+    color: var(--text-muted) !important;
+}
+
+.nav-menu-link:hover,
+.nav-menu-link.active {
+    color: var(--primary-color) !important;
+    background: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Cards */
+.glass-card,
+.dashboard-card,
+.content-card,
+.feature-card,
+.balance-card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+}
+
+/* Inputs */
+.form-control {
+    background: var(--bg-input) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+}
+
+.form-control::placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* Text Utilities */
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-white-50 {
+    color: var(--text-muted) !important;
+}
+
+/* Dropdowns */
+.user-dropdown,
+.nav-submenu {
+    background: var(--bg-nav) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.dropdown-menu-item,
+.submenu-item {
+    color: var(--text-main) !important;
+}
+
+.dropdown-menu-item:hover,
+.submenu-item:hover {
+    background: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Footer */
+footer {
+    background: var(--bg-nav) !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: rotate(15deg);
+}

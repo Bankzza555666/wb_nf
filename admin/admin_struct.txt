@@ -1,0 +1,14 @@
+/ (Root)
+├── index.php  (Router)
+├── controller/
+│   └── admin_controller/
+│       ├── admin_config.php   (Config & Auth)
+│       ├── admin_api.php      (ระบบจัดการทั่วไป Users, Servers, Products, Topup)
+│       └── admin_chat_api.php (ระบบแชท - ใช้ตัวเดิม)
+└── admin/
+    ├── navbar.php
+    ├── dashboard.php
+    ├── users.php
+    ├── servers.php
+    ├── products.php
+    └── topup.php

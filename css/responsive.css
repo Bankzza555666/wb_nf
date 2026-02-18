@@ -1,0 +1,453 @@
+/* responsive.css - Responsive Styles สำหรับ VPN System */
+
+/* ===========================
+   RESPONSIVE BREAKPOINTS
+   =========================== */
+
+/* Extra Large Devices (Desktop, 1400px and up) */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
+    }
+    
+    .page-title {
+        font-size: 48px;
+    }
+}
+
+/* Large Devices (Desktops, 992px and up) */
+@media (min-width: 992px) and (max-width: 1399px) {
+    .page-title {
+        font-size: 42px;
+    }
+    
+    .balance-amount {
+        font-size: 36px;
+    }
+}
+
+/* Medium Devices (Tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .page-title {
+        font-size: 36px;
+    }
+    
+    .page-subtitle {
+        font-size: 16px;
+    }
+    
+    .balance-card {
+        padding: 20px;
+    }
+    
+    .balance-amount {
+        font-size: 30px;
+    }
+    
+    /* Wizard Tabs */
+    .wizard-nav .nav-link {
+        padding: 12px 8px;
+        font-size: 14px;
+    }
+    
+    .wizard-nav .nav-link .step-number {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
+    }
+    
+    /* Server Cards */
+    .server-option {
+        padding: 15px;
+    }
+    
+    .step-card-content {
+        padding: 20px;
+    }
+}
+
+/* Small Devices (Phones landscape, 576px and up) */
+@media (min-width: 576px) and (max-width: 767px) {
+    .page-title {
+        font-size: 30px;
+        margin-bottom: 8px;
+    }
+    
+    .page-subtitle {
+        font-size: 14px;
+        margin-bottom: 25px;
+    }
+    
+    .balance-card {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .balance-amount {
+        font-size: 24px;
+    }
+    
+    /* Wizard Tabs - แสดงแนวตั้ง */
+    .wizard-nav {
+        padding: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .wizard-nav .nav-link {
+        padding: 10px;
+        flex-direction: row;
+        font-size: 13px;
+        gap: 10px;
+        text-align: left;
+    }
+    
+    .wizard-nav .nav-link .step-number {
+        width: 24px;
+        height: 24px;
+        font-size: 11px;
+        flex-shrink: 0;
+    }
+    
+    /* Server/Profile Cards */
+    .server-option, .profile-option {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .server-option .flex-grow-1 {
+        padding-right: 60px;
+    }
+    
+    .status-badge {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+    
+    /* Sliders */
+    .step-card-content {
+        padding: 15px;
+    }
+    
+    .slider-label {
+        font-size: 14px;
+    }
+    
+    .slider-value {
+        font-size: 16px;
+    }
+    
+    .custom-slider {
+        height: 6px;
+    }
+    
+    .stepper-input {
+        gap: 8px;
+    }
+    
+    .stepper-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 18px;
+    }
+    
+    .stepper-input input {
+        font-size: 16px;
+        padding: 8px;
+    }
+    
+    /* Summary Sidebar */
+    .summary-card {
+        margin-top: 20px;
+    }
+    
+    .price-row {
+        font-size: 14px;
+    }
+    
+    /* Buttons */
+    .btn-lg {
+        padding: 12px 24px;
+        font-size: 16px;
+    }
+}
+
+/* Extra Small Devices (Phones portrait, less than 576px) */
+@media (max-width: 575px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .page-title {
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
+    
+    .page-subtitle {
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+    
+    /* Balance Card */
+    .balance-card {
+        padding: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .balance-label {
+        font-size: 12px;
+    }
+    
+    .balance-amount {
+        font-size: 20px;
+    }
+    
+    /* Wizard Tabs - Stack แนวตั้ง */
+    .wizard-nav {
+        padding: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .wizard-nav .nav {
+        flex-direction: column !important;
+    }
+    
+    .wizard-nav .nav-link {
+        padding: 8px;
+        flex-direction: row;
+        font-size: 12px;
+        gap: 8px;
+        text-align: left;
+        width: 100%;
+    }
+    
+    .wizard-nav .nav-link .step-number {
+        width: 22px;
+        height: 22px;
+        font-size: 10px;
+        flex-shrink: 0;
+    }
+    
+    .step-card-content {
+        padding: 12px;
+    }
+    
+    /* Server/Profile Options */
+    .server-option, .profile-option {
+        padding: 10px;
+        margin-bottom: 8px;
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .server-option .flex-grow-1 {
+        padding-right: 0;
+        width: 100%;
+    }
+    
+    .server-option h5, .profile-option h5 {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    .server-option p, .profile-option p {
+        font-size: 11px;
+        margin-bottom: 3px;
+    }
+    
+    .status-badge {
+        font-size: 9px;
+        padding: 3px 6px;
+        position: static !important;
+        margin-top: 8px;
+    }
+    
+    .profile-badge {
+        font-size: 9px;
+        padding: 2px 6px;
+    }
+    
+    /* Sliders & Steppers */
+    .slider-label {
+        font-size: 13px;
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 5px;
+    }
+    
+    .slider-value {
+        font-size: 15px;
+        align-self: flex-start;
+    }
+    
+    .custom-slider {
+        height: 5px;
+    }
+    
+    .stepper-input {
+        gap: 5px;
+        margin-bottom: 8px;
+    }
+    
+    .stepper-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    
+    .stepper-input input {
+        font-size: 14px;
+        padding: 6px;
+        width: 60px;
+    }
+    
+    /* Price Summary */
+    .summary-card {
+        margin-top: 15px;
+        padding: 12px;
+    }
+    
+    .summary-title {
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .price-row {
+        font-size: 12px;
+        padding: 6px 0;
+    }
+    
+    .price-row:last-child {
+        font-size: 14px;
+        padding-top: 8px;
+    }
+    
+    /* Buttons */
+    .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .btn-lg {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    /* VPN Cards (my_vpn.php) */
+    .vpn-card {
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .vpn-card h5 {
+        font-size: 14px;
+    }
+    
+    .vpn-card .badge {
+        font-size: 10px;
+    }
+    
+    .progress {
+        height: 8px;
+    }
+    
+    .traffic-info {
+        font-size: 11px;
+    }
+    
+    /* Management Buttons */
+    .btn-group {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+    
+    /* Modals */
+    .modal-dialog {
+        margin: 10px;
+    }
+    
+    .modal-body {
+        padding: 15px;
+    }
+    
+    .modal-title {
+        font-size: 16px;
+    }
+}
+
+/* ===========================
+   LANDSCAPE ORIENTATION FIX
+   =========================== */
+
+@media (max-width: 767px) and (orientation: landscape) {
+    .page-title {
+        font-size: 20px;
+        margin-bottom: 5px;
+    }
+    
+    .page-subtitle {
+        font-size: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .wizard-nav {
+        margin-bottom: 10px;
+    }
+    
+    .step-card-content {
+        padding: 10px;
+    }
+    
+    .modal-dialog {
+        max-width: 90%;
+    }
+}
+
+/* ===========================
+   UTILITIES
+   =========================== */
+
+/* Hide on Mobile */
+@media (max-width: 767px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+/* Hide on Desktop */
+@media (min-width: 768px) {
+    .hide-desktop {
+        display: none !important;
+    }
+}
+
+/* Text Responsive */
+@media (max-width: 575px) {
+    .text-responsive {
+        font-size: 12px !important;
+    }
+    
+    .text-responsive-sm {
+        font-size: 11px !important;
+    }
+}
+
+/* Flex Responsive */
+@media (max-width: 767px) {
+    .flex-mobile-column {
+        flex-direction: column !important;
+    }
+}
+
+/* Container Padding */
+@media (max-width: 575px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
