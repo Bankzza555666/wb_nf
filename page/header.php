@@ -12,6 +12,10 @@
     <!-- SEO & Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="64x64" href="img/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/favicon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
     <meta name="description" content="NF~SHOP บริการ VPN และเติมเงินเกมราคาถูก รวดเร็ว ปลอดภัย ตลอด 24 ชั่วโมง">
     <meta name="keywords" content="VPN, เติมเงินเกม, อินเทอร์เน็ต, NF SHOP, ราคาถูก">
     <meta property="og:title" content="NF~SHOP - ยินดีต้อนรับ">

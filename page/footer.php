@@ -5,7 +5,7 @@
     <div class="container">
         <div class="footer-inner">
             <div class="footer-brand">
-                <i class="fas fa-shield-halved"></i>
+                <img src="img/logo.png" alt="Logo" style="height: 30px; width: auto;">
                 <span>NF~SHOP</span>
             </div>
             <nav class="footer-links">

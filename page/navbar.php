@@ -29,9 +29,7 @@ if (isset($conn) && $conn) {
         <div class="nav-wrap">
             <!-- Logo -->
             <a class="brand" href="?r=landing">
-                <div class="brand-icon">
-                    <i class="fas fa-bolt"></i>
-                </div>
+                <img src="img/logo.png" alt="Logo" style="height: 40px; width: auto; margin-right: 10px;">
                 <span class="brand-text">NF~SHOP</span>
             </a>
 
@@ -83,9 +81,7 @@ if (isset($conn) && $conn) {
 <div class="sidebar" id="sidebar">
     <div class="sidebar-head">
         <div class="sidebar-brand">
-            <div class="sidebar-brand-icon">
-                <i class="fas fa-bolt"></i>
-            </div>
+            <img src="img/logo.png" alt="Logo" style="height: 35px; width: auto; margin-right: 8px;">
             <span>NF~SHOP</span>
         </div>
         <button class="close-btn" id="closeSidebar" aria-label="Close Menu">
