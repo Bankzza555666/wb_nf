@@ -366,6 +366,52 @@ $csrf_token = generateCsrfToken();
                 padding-bottom: max(10px, env(safe-area-inset-bottom));
             }
         }
+
+        /* ===== New Chat Toggles ===== */
+        .chat-toggle-group {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 4px;
+        }
+
+        .chat-toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chat-toggle-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-toggle-btn[data-active="true"] {
+            background: rgba(229, 9, 20, 0.2);
+            color: #ff4757;
+            box-shadow: 0 0 10px rgba(229, 9, 20, 0.2);
+            border: 1px solid rgba(229, 9, 20, 0.3);
+        }
+
+        .chat-toggle-btn[data-active="true"] i {
+            animation: pulse-icon 2s infinite;
+        }
+
+        @keyframes pulse-icon {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
     <!-- ✅ Site Theme (Admin Selectable) -->
     <?php if (file_exists(__DIR__ . '/../include/theme_head.php')) include __DIR__ . '/../include/theme_head.php'; ?>
@@ -382,17 +428,14 @@ $csrf_token = generateCsrfToken();
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="mb-0 fw-bold"><i class="fas fa-inbox text-primary me-2"></i> ข้อความ</h5>
 
-                    <div class="d-flex gap-3">
-                        <div class="form-check form-switch" title="เปิด/ปิด เสียงอ่านข้อความ">
-                            <input class="form-check-input" type="checkbox" id="voiceToggle" style="cursor: pointer;">
-                            <label class="form-check-label text-secondary small" for="voiceToggle"><i
-                                    class="fas fa-volume-up"></i> Voice</label>
-                        </div>
-
-                        <div class="form-check form-switch" title="เปิด/ปิด AI ตอบกลับ">
-                            <input class="form-check-input" type="checkbox" id="aiToggle" style="cursor: pointer;">
-                            <label class="form-check-label text-secondary small" for="aiToggle"><i
-                                    class="fas fa-robot"></i> AI</label>
+                    <div class="d-flex gap-2">
+                        <div class="chat-toggle-group">
+                            <button class="chat-toggle-btn" id="voiceToggleBtn" data-active="false" title="เปิด/ปิด เสียงอ่าน">
+                                <i class="fas fa-volume-mute"></i> <span>Voice</span>
+                            </button>
+                            <button class="chat-toggle-btn" id="aiToggleBtn" data-active="false" title="เปิด/ปิด AI">
+                                <i class="fas fa-robot"></i> <span>AI</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -461,8 +504,8 @@ $csrf_token = generateCsrfToken();
             let lastMsgMap = {};
             let isFirstLoad = true;
 
-            const voiceToggle = document.getElementById('voiceToggle');
-            const aiToggle = document.getElementById('aiToggle');
+            const voiceToggleBtn = document.getElementById('voiceToggleBtn');
+            const aiToggleBtn = document.getElementById('aiToggleBtn');
             const layout = document.getElementById('chatLayout');
             const usersList = document.getElementById('usersList');
             const messageArea = document.getElementById('messageArea');
@@ -475,28 +518,37 @@ $csrf_token = generateCsrfToken();
             setAppHeight();
 
             // 1. Voice Toggle
+            function updateVoiceUI(active) {
+                voiceToggleBtn.dataset.active = active;
+                voiceToggleBtn.innerHTML = active 
+                    ? '<i class="fas fa-volume-up"></i> <span>Voice: ON</span>' 
+                    : '<i class="fas fa-volume-mute"></i> <span>Voice: OFF</span>';
+            }
+
             function loadVoiceStatus() {
                 fetch(`${API_URL}?action=get_voice_status`)
                     .then(res => res.json())
-                    .then(data => { if (data.success) voiceToggle.checked = data.active; });
+                    .then(data => { if (data.success) updateVoiceUI(data.active); });
             }
 
-            voiceToggle.addEventListener('change', () => {
-                const isActive = voiceToggle.checked;
+            voiceToggleBtn.addEventListener('click', () => {
+                const isActive = voiceToggleBtn.dataset.active === 'true';
+                const newState = !isActive;
+                
+                updateVoiceUI(newState); // Optimistic update
+
                 const formData = new FormData();
                 formData.append('csrf_token', CSRF_TOKEN); // ✅ CSRF
                 formData.append('action', 'toggle_voice');
-                formData.append('status', isActive);
+                formData.append('status', newState);
                 fetch(API_URL, { method: 'POST', body: formData });
 
-                // ✅ เพิ่มตรงนี้: ถ้าเปิด Voice ให้พูดแจ้งสถานะ
-                if (isActive) speakText("เปิดระบบแจ้งเตือนด้วยเสียงแล้วครับ");
+                if (newState) speakText("เปิดระบบแจ้งเตือนด้วยเสียงแล้วครับ");
             });
             loadVoiceStatus();
 
             function speakText(text) {
-                // เช็คว่าเปิดสวิตช์ Voice หรือไม่ (ถ้าปิด ก็ไม่ต้องพูด)
-                if (!voiceToggle.checked) return;
+                if (voiceToggleBtn.dataset.active !== 'true') return;
 
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
@@ -507,22 +559,32 @@ $csrf_token = generateCsrfToken();
             }
 
             // 2. AI Toggle
+            function updateAI_UI(active) {
+                aiToggleBtn.dataset.active = active;
+                aiToggleBtn.innerHTML = active 
+                    ? '<i class="fas fa-robot"></i> <span>AI: ON</span>' 
+                    : '<i class="fas fa-robot"></i> <span>AI: OFF</span>';
+            }
+
             function loadAIStatus() {
                 fetch(`${API_URL}?action=get_ai_status`)
                     .then(res => res.json())
-                    .then(data => { if (data.success) aiToggle.checked = data.active; });
+                    .then(data => { if (data.success) updateAI_UI(data.active); });
             }
 
-            aiToggle.addEventListener('change', () => {
-                const isActive = aiToggle.checked;
+            aiToggleBtn.addEventListener('click', () => {
+                const isActive = aiToggleBtn.dataset.active === 'true';
+                const newState = !isActive;
+
+                updateAI_UI(newState); // Optimistic update
+
                 const formData = new FormData();
                 formData.append('csrf_token', CSRF_TOKEN); // ✅ CSRF
                 formData.append('action', 'toggle_ai');
-                formData.append('status', isActive);
+                formData.append('status', newState);
                 fetch(API_URL, { method: 'POST', body: formData });
 
-                // ✅ เพิ่มตรงนี้: พูดแจ้งเตือนสถานะ AI
-                if (isActive) {
+                if (newState) {
                     speakText("เปิดระบบเอไอ ตอบกลับแล้วครับ");
                 } else {
                     speakText("ปิดระบบเอไอแล้วครับ");
