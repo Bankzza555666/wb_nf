@@ -140,21 +140,30 @@ if ($action === 'send') {
 
         if ($stmt->execute()) {
 
-            // ✅ [START] แจ้งเตือน Telegram Chat เข้ามือถือแอดมิน (แทน Xdroid)
+            // ✅ [START] ระบบแจ้งเตือน (Notification System)
+            // ดึงชื่อผู้ใช้ก่อน
+            $u_name = 'User #' . $user_id;
+            $u_stmt = $conn->prepare("SELECT username FROM users WHERE id = ? LIMIT 1");
+            $u_stmt->bind_param("i", $user_id);
+            if ($u_stmt->execute()) {
+                $u_res = $u_stmt->get_result();
+                if ($u_row = $u_res->fetch_assoc()) {
+                    $u_name = $u_row['username'];
+                }
+            }
+            $u_stmt->close();
+
+            $noti_msg = !empty($message) ? $message : '[ส่งรูปภาพ]';
+
+            // 1. แจ้งเตือน Telegram Chat
             if (file_exists(__DIR__ . '/alert_modul/telegram_chat_helper.php')) {
                 require_once __DIR__ . '/alert_modul/telegram_chat_helper.php';
-
-                $u_stmt = $conn->prepare("SELECT username FROM users WHERE id = ? LIMIT 1");
-                $u_stmt->bind_param("i", $user_id);
-                $u_stmt->execute();
-                $u_query = $u_stmt->get_result();
-                $u_name = ($u_query->num_rows > 0) ? $u_query->fetch_assoc()['username'] : 'User #' . $user_id;
-                $u_stmt->close();
-
-                $noti_msg = !empty($message) ? $message : '[ส่งรูปภาพ]';
-
-                // ส่ง Telegram
                 sendTelegramChatNotify($user_id, $u_name, $noti_msg, $imagePath);
+            }
+
+            // 2. แจ้งเตือน XDroid (ตามคำขอ)
+            if (function_exists('sendXdroidChat')) {
+                 sendXdroidChat($u_name, $noti_msg);
             }
             // ✅ [END]
 

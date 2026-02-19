@@ -220,30 +220,78 @@ function findGoodResponses($conn, $userMessage)
     return null;
 }
 
+// ✅ ฟังก์ชัน 5: Local AI Simulation (กรณีไม่มี API Key หรือ API ล่ม)
+function generateLocalAI($message)
+{
+    $msg = mb_strtolower($message);
+    
+    // 1. ทักทาย
+    if (preg_match('/(สวัสดี|ดีครับ|ดีค่ะ|hello|hi|ทัก)/u', $msg)) {
+        $greetings = [
+            "สวัสดีครับ! 😊 มีอะไรให้แอดมินช่วยดูแลไหมครับ?",
+            "สวัสดีครับผม 🙏 สอบถามเรื่อง VPN หรือ SSH ดีครับ?",
+            "ยินดีต้อนรับครับ! ⚡ ต้องการความช่วยเหลือด้านไหนแจ้งได้เลยนะครับ"
+        ];
+        return $greetings[array_rand($greetings)];
+    }
+
+    // 2. สนใจ VPN
+    if (preg_match('/(vpn|v2ray|เช่า|สนใจ|ราคา|แพ็กเกจ|pro)/u', $msg)) {
+        return "สนใจเช่า VPN ความเร็วสูงใช่ไหมครับ? 🚀\nเรามีแพ็กเกจรองรับทั้งดูหนังและเล่นเกมครับ\nดูรายละเอียดและเช่าได้ที่นี่เลยครับ 👇\n||ACTION:NAV:?p=rent_vpn||";
+    }
+
+    // 3. สนใจ SSH/Netmod
+    if (preg_match('/(ssh|tunnel|netmod|inject|http|kpn|ovpn)/u', $msg)) {
+        return "สาย SSH/Tunnel เชิญทางนี้ครับ ⚙️\nเรามีเซิร์ฟเวอร์คุณภาพสูง รองรับหลายแอป\nกดเลือกเซิร์ฟเวอร์ได้ที่นี่ครับ 👇\n||ACTION:NAV:?p=rent_ssh||";
+    }
+
+    // 4. เติมเงิน
+    if (preg_match('/(เติมเงิน|โอน|pay|wallet|วอเลท|กสิกร|กรุงไทย)/u', $msg)) {
+        return "เติมเงินง่ายๆ ด้วยระบบอัตโนมัติ (รองรับสแกน QR) 💰\nเงินเข้าทันทีไม่ต้องรอแอดมินยืนยันครับ\nคลิกเติมเงินที่นี่ 👇\n||ACTION:NAV:?p=topup||";
+    }
+
+    // 5. แจ้งปัญหา/ติดต่อคน
+    if (preg_match('/(พัง|เสีย|ไม่ได้|หลุด|ช้า|ช่วย|ติดต่อ|แอดมิน)/u', $msg)) {
+        return "ขออภัยในความไม่สะดวกด้วยครับ 🙏\nเบื้องต้นลองรีสตาร์ทแอป หรือเช็ควันหมดอายุแพ็กเกจก่อนนะครับ\nหากยังไม่ได้ แอดมินจะรีบเข้ามาตรวจสอบให้นะครับ (ข้อความนี้ตอบรับอัตโนมัติ)";
+    }
+
+    // 6. ขอบคุณ
+    if (preg_match('/(ขอบคุณ|แต้ง|thank|ok|โอเค|ได้แล้ว)/u', $msg)) {
+        return "ยินดีให้บริการเสมอครับ! 😊 ขอให้มีความสุขกับการใช้งานนะครับ";
+    }
+
+    return null; // ส่งกลับ null เพื่อให้ไปใช้ Fallback ของ chat_api.php ต่อ (ถ้ามี)
+}
+
 function generateAIResponse($userId, $userMessage, $conn)
 {
-    $uid = (int) $userId; // ป้องกัน SQL Injection
-    $apiKey = TYPHOON_API_KEY;
+    $uid = (int) $userId;
+    $apiKey = defined('TYPHOON_API_KEY') ? TYPHOON_API_KEY : '';
     
-    // 1. ✅ CHECK ADMIN RULES (Training) - ตรวจสอบกฎที่แอดมินสอนไว้ก่อน
+    // 1. ✅ CHECK ADMIN RULES (Training)
     $ruleReply = checkAdminRules($conn, $userMessage);
-    if ($ruleReply) {
-        return $ruleReply;
-    }
+    if ($ruleReply) return $ruleReply;
 
-    // 2. ✅ CHECK GOOD RESPONSES - ใช้คำตอบที่ได้คะแนนดีจากคำถามคล้ายๆ กัน
+    // 2. ✅ CHECK GOOD RESPONSES
     $goodReply = findGoodResponses($conn, $userMessage);
-    if ($goodReply) {
-        return $goodReply;
+    if ($goodReply) return $goodReply;
+
+    // 3. 🟡 CHECK API KEY EXISTENCE -> Switch to Local AI
+    if (empty($apiKey)) {
+        // ไม่มี API Key -> ใช้ระบบ Local Simulation
+        $localReply = generateLocalAI($userMessage);
+        if ($localReply) return $localReply;
+        return null; // ปล่อยให้ fallback ทำงาน
     }
 
+    // ... (logic สำหรับเรียก API เหมือนเดิม) ...
     // 1. ข้อมูล User ปัจจุบัน
     $userQ = $conn->query("SELECT username, credit FROM users WHERE id = $uid");
     $userData = $userQ->fetch_assoc();
     $userName = $userData['username'] ?? 'User';
     $userCredit = number_format($userData['credit'] ?? 0, 2);
 
-    // 2. เช็คบิลค้าง (เหมือนเดิม)
+    // 2. เช็คบิลค้าง
     $pendingBillTxt = "No pending bills.";
     $pendingRef = "";
     $billQ = $conn->query("SELECT transaction_ref, amount FROM topup_transactions WHERE user_id = $uid AND status = 'pending' ORDER BY id DESC LIMIT 1");
@@ -255,11 +303,8 @@ function generateAIResponse($userId, $userMessage, $conn)
     }
 
     $apiUrl = 'https://api.opentyphoon.ai/v1/chat/completions';
-
-    // 3. ✅ ดึงความรู้จากแชททั้งหมด (The Hive Mind)
     $globalKnowledge = findGlobalSolutions($conn, $userMessage);
 
-    // 4. ประวัติแชทส่วนตัว (Context)
     $histQuery = "SELECT sender, message FROM chat_messages WHERE user_id = $uid ORDER BY id DESC LIMIT 8";
     $histResult = $conn->query($histQuery);
     $history = [];
@@ -269,7 +314,6 @@ function generateAIResponse($userId, $userMessage, $conn)
         array_unshift($history, ['role' => $role, 'content' => $cleanMsg]);
     }
 
-    // 5. สร้าง Prompt (อัปเกรดใหม่)
     $systemPrompt = <<<EOT
 You are 'NF~SHOP AI', an intelligent admin assistant.
     
@@ -278,38 +322,20 @@ You are 'NF~SHOP AI', an intelligent admin assistant.
     - Credit: $userCredit THB
     - Status: $pendingBillTxt
 
-    [Knowledge from Past Admin Solutions (Reference Only)]
-    Use these strictly to learn HOW to solve the problem, but do NOT copy confidential info:
+    [Knowledge from Past Admin Solutions]
     $globalKnowledge
 
-    [Site Service Knowledge]
-    1. **SSH / Netmod / NPV Tunnel**:
-       - High-speed tunneling service for anonymity, bypassing restrictions, and securing connections.
-       - Supports apps like Netmod, HTTP Injector, KPN Tunnel.
-       - **Action**: Direct user to `?p=rent_ssh` to browse servers.
-
-    2. **V2RAY / VPN**:
-       - Premium VPN service optimized for streaming (Netflix, Disney+, etc.) and gaming.
-       - Uses V2Ray protocol for better stability and speed.
-       - **Action**: Direct user to `?p=rent_vpn` to view packages.
-
-    [Site Navigation Map - USE THESE LINKS]
-    - **Rent SSH/Netmod**: `?p=rent_ssh` (For SSH, Tunel, Netmod users)
-    - **Rent VPN/V2Ray**: `?p=rent_vpn` (For standard VPN users)
-    - **Streaming Packages**: `?p=products_category&id=3` (Youtube, Netflix access)
-    - **Manage My SSH**: `?p=my_ssh` (Check time, get config for SSH)
-    - **Manage My VPN**: `?p=my_vpn` (Check time, get config for V2Ray)
-    - **Topup / Add Credit**: `?p=topup` (PromptPay/Bank Transfer)
-    - **Topup History**: `?p=topup_history`
-    - **Contact Admin**: `?p=contact`
+    [Site Navigation Map]
+    - Rent SSH: `?p=rent_ssh`
+    - Rent VPN: `?p=rent_vpn`
+    - Topup: `?p=topup`
+    - Contact: `?p=contact`
 
     [Instructions]
-    1. **Role**: You are a helpful technical support AI for NF~SHOP. Answer in **Natural Thai (ภาษาไทยให้อ่านง่าย)**.
-    2. **Navigation**: When a user asks about buying, checking status, or specific services, **ALWAYS** provide the specific link using `||ACTION:NAV:url||`.
-       - Example: "อยากเช่า SSH" -> "ได้เลยครับ คุณสามารถเลือก Server SSH คุณภาพสูงได้ที่นี่: ||ACTION:NAV:?p=rent_ssh||"
-    3. **Billing**: If `Pending Bill: ...` is present above, explain it and offer: "คุณมียอดค้างชำระ... ||ACTION:PAY:$pendingRef||".
-    4. **Technical Help**: Use `[Knowledge from Past Admin Solutions]` to suggest fixes if available.
-    5. **Tone**: Professional, friendly, and concise (2-4 sentences is best).
+    1. Answer in **Natural Thai**.
+    2. Use `||ACTION:NAV:url||` for links.
+    3. If `Pending Bill`, offer payment link: `||ACTION:PAY:$pendingRef||`.
+    4. Be helpful and concise.
 EOT;
 
     $messages = array_merge(
@@ -318,18 +344,16 @@ EOT;
         [['role' => 'user', 'content' => $userMessage]]
     );
 
-    // 6. ส่ง API
     $data = [
         'model' => 'typhoon-v2.1-12b-instruct',
         'messages' => $messages,
         'temperature' => 0.4,
-        'max_tokens' => 1200
+        'max_tokens' => 800
     ];
 
-    // ✅ เช็คว่า curl extension มีหรือไม่
     if (!function_exists('curl_init')) {
         @file_put_contents(__DIR__ . '/../logs/ai_debug.log', date('[Y-m-d H:i:s] ') . "ERROR: curl extension not installed\n", FILE_APPEND);
-        return null;
+        return generateLocalAI($userMessage);
     }
 
     $ch = curl_init($apiUrl);
@@ -340,15 +364,10 @@ EOT;
         'Content-Type: application/json',
         'Authorization: Bearer ' . $apiKey
     ]);
-
-    // ✅ Timeout settings (ป้องกัน hang)
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10); // 10 วินาทีสำหรับ connect
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);        // 30 วินาทีสำหรับ response
-
-    // DEBUG: Disable SSL Verify to fix XAMPP/hosting issues
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-
+    
     $response = curl_exec($ch);
     $err = curl_error($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -364,13 +383,13 @@ EOT;
     @file_put_contents(__DIR__ . '/../logs/ai_debug.log', $logMsg, FILE_APPEND);
 
     if ($err) {
-        return null;
+        return generateLocalAI($userMessage);
     }
 
     // ✅ เช็ค HTTP Status Code
     if ($httpCode !== 200) {
         @file_put_contents(__DIR__ . '/../logs/ai_debug.log', date('[Y-m-d H:i:s] ') . "API Error HTTP $httpCode: $response\n", FILE_APPEND);
-        return null;
+        return generateLocalAI($userMessage);
     }
 
     $json = json_decode($response, true);
@@ -378,9 +397,9 @@ EOT;
     // ✅ เช็คว่า API ตอบกลับถูกต้อง
     if (isset($json['error'])) {
         @file_put_contents(__DIR__ . '/../logs/ai_debug.log', date('[Y-m-d H:i:s] ') . "API Error: " . json_encode($json['error']) . "\n", FILE_APPEND);
-        return null;
+        return generateLocalAI($userMessage);
     }
 
-    return $json['choices'][0]['message']['content'] ?? null;
+    return $json['choices'][0]['message']['content'] ?? generateLocalAI($userMessage);
 }
 ?>
