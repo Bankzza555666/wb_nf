@@ -136,6 +136,89 @@ checkAdminAuth();
             transform: scale(1.05);
             border-color: var(--accent);
         }
+
+        /* ✅ New Toggle Switch Design */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-container:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .neon-switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .neon-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .3s;
+            border-radius: 34px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #888;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: rgba(229, 9, 20, 0.3);
+            border-color: var(--accent);
+            box-shadow: 0 0 8px rgba(229, 9, 20, 0.3);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+            background-color: #fff;
+            box-shadow: 0 0 5px #fff;
+        }
+        
+        .toggle-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .toggle-icon {
+            margin-right: 8px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        input:checked ~ .toggle-label {
+            color: #fff;
+        }
     </style>
     <!-- ✅ Site Theme (Admin Selectable) -->
     <?php if (file_exists(__DIR__ . '/../include/theme_head.php')) include __DIR__ . '/../include/theme_head.php'; ?>
@@ -282,16 +365,27 @@ checkAdminAuth();
 
                         <div class="row g-3 mt-2">
                             <div class="col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="is_popular" id="eis_popular">
-                                    <label class="form-check-label text-secondary">แนะนำ (Popular)</label>
+                                <div class="toggle-container">
+                                    <div class="d-flex align-items-center">
+                                        <div class="toggle-icon text-warning"><i class="fas fa-star"></i></div>
+                                        <span class="toggle-label">แนะนำ (Popular)</span>
+                                    </div>
+                                    <label class="neon-switch">
+                                        <input type="checkbox" name="is_popular" id="eis_popular">
+                                        <span class="slider"></span>
+                                    </label>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="is_active" id="eis_active"
-                                        checked>
-                                    <label class="form-check-label text-secondary">เปิดใช้งาน</label>
+                                <div class="toggle-container">
+                                    <div class="d-flex align-items-center">
+                                        <div class="toggle-icon text-success"><i class="fas fa-power-off"></i></div>
+                                        <span class="toggle-label">เปิดใช้งาน</span>
+                                    </div>
+                                    <label class="neon-switch">
+                                        <input type="checkbox" name="is_active" id="eis_active" checked>
+                                        <span class="slider"></span>
+                                    </label>
                                 </div>
                             </div>
                             <div class="col-md-4">
